@@ -8,6 +8,8 @@ import imgviz
 import PIL.Image
 from loguru import logger
 
+import numpy as np
+
 from labelme import utils
 
 
@@ -61,8 +63,12 @@ def main():
     for name, value in label_name_to_value.items():
         label_names[value] = name
 
+    img = imgviz.asgray(img)
+# asgray does NOT convert mono (gray) 16-bits to 8-bits so do it here:
+    if img.dtype != np.uint8:
+        img =  (img/(np.max(img)/256)).astype('uint8')
     lbl_viz = imgviz.label2rgb(
-        lbl, imgviz.asgray(img), label_names=label_names, loc="rb"
+        lbl, img, label_names=label_names, loc="rb"
     )
 
     PIL.Image.fromarray(img).save(osp.join(out_dir, "img.png"))
